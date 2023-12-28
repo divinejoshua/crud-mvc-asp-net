@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using RunGroopWebApp.Data;
 using RunGroopWebApp.Models;
 
@@ -19,11 +20,19 @@ namespace RunGroopWebApp.Controllers
         {
             _context = context;
         }
+
         // GET: /races/
         public IActionResult Index()
         {
             List<Race> races = _context.Races.ToList();
             return View(races);
+        }
+
+        // GET: /race/detail/<id>
+        public IActionResult Detail(int id)
+        {
+            Race race = _context.Races.Include(addressObj => addressObj.Address).FirstOrDefault(raceObj => raceObj.Id == id);
+            return View(race);
         }
     }
 }
