@@ -1,9 +1,25 @@
-﻿var builder = WebApplication.CreateBuilder(args);
+﻿using Microsoft.EntityFrameworkCore;
+using RunGroopWebApp.Data;
+
+var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 
+//Database
+builder.Services.AddDbContext<ApplicationDbContext>(options =>
+{
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
+});
+
 var app = builder.Build();
+
+//Seed the database with data
+if(args.Length ==1 && args[0].ToLower() == "seeddata")
+{
+    //Seed.SeedUsersAndRolesAsync(app);
+    Seed.SeedData(app);
+}
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())

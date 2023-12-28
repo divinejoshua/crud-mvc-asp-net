@@ -3,6 +3,7 @@ namespace RunGroopWebApp.Models
 {
 	public class AppUser
 	{
+		public string? Id { get; set; }
 		public int? Pace { get; set; }
 		public int? Millage { get; set; }
 		public Address? Address { get; set; }
