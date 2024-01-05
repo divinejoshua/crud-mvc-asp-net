@@ -73,6 +73,62 @@ namespace RunGroopWebApp.Controllers
             }
             return View(raceVm);
         }
+
+        //GET: /race/edit
+        public async Task<ActionResult> Edit(int id)
+        {
+            var race = await _raceRepository.GetByIdAsync(id);
+            if (race == null) return View("Error");
+            var raceVm = new EditRaceViewModel
+            {
+                Title = race.Title,
+                Description = race.Description,
+                AddressId = race.AddressId,
+                Address = race.Address,
+                URL = race.Image,
+                RaceCategory = race.RaceCategory
+            };
+            return View(raceVm);
+        }
+
+        //POST: /race/edit
+        [HttpPost]
+        public async Task<IActionResult> Edit(int id, EditRaceViewModel raceVm)
+        {
+            if (!ModelState.IsValid)
+            {
+                ModelState.AddModelError("", "Failed to edit race");
+                return View("Edit", raceVm);
+            }
+            var userRace = await _raceRepository.GetByIdAsyncNoTracking(id);
+
+            if (userRace != null)
+            {
+
+                //Upload image
+                var ImageResult = await _fileService.UploadFileAsync(raceVm.Image);
+                var race = new Race
+                {
+                    Id = id,
+                    Title = raceVm.Title,
+                    Description = raceVm.Description,
+                    Image = ImageResult.Uri.AbsoluteUri.ToString(),
+                    AddressId = raceVm.AddressId,
+                    Address = raceVm.Address
+
+                };
+
+                _raceRepository.Update(race);
+
+                return RedirectToAction("Index");
+
+            }
+            else
+            {
+                return View(raceVm);
+            }
+        }
+
     }
 }
 

@@ -49,12 +49,13 @@ namespace RunGroopWebApp.Controllers
         {
             if (ModelState.IsValid)
             {
-                var result = await _fileService.UploadFileAsync(clubVM.Image);
+                //Upload image
+                var ImageResult = await _fileService.UploadFileAsync(clubVM.Image);
                 var club = new Club()
                 {
                     Title = clubVM.Title,
                     Description = clubVM.Description,
-                    Image = result.Uri.AbsoluteUri.ToString(),
+                    Image = ImageResult.Uri.AbsoluteUri.ToString(),
                     ClubCategory = clubVM.ClubCategory,
                     Address = new Address {
                         Street = clubVM.Address.Street,
@@ -70,6 +71,58 @@ namespace RunGroopWebApp.Controllers
                 ModelState.AddModelError("", "Photo upload failed");
             }
             return View(clubVM);
+        }
+
+        //GET: /club/edit
+        public async Task<ActionResult> Edit(int id)
+        {
+            var club  = await _clubRepository.GetByIdAsync(id);
+            if (club == null) return View("Error");
+            var clubVm = new EditClubViewModel
+            {
+                Title = club.Title,
+                Description = club.Description,
+                AddressId = club.AddressId,
+                Address = club.Address,
+                URL = club.Image,
+                ClubCategory = club.ClubCategory
+            };
+            return View(clubVm);
+        }
+
+        //POST: /club/edit
+        [HttpPost]
+        public async Task<IActionResult> Edit(int id, EditClubViewModel clubVM)
+        {
+            if (!ModelState.IsValid)
+            {
+                ModelState.AddModelError("", "Failed to edit club");
+                return View("Edit", clubVM);
+            }
+            var userClub = await _clubRepository.GetByIdAsyncNoTracking(id);
+
+            if (userClub != null) { 
+
+                //Upload image
+                var ImageResult = await _fileService.UploadFileAsync(clubVM.Image);
+                var club = new Club
+                {
+                    Id = id,
+                    Title = clubVM.Title,
+                    Description = clubVM.Description,
+                    Image = ImageResult.Uri.AbsoluteUri.ToString(),
+                    AddressId = clubVM.AddressId,
+                    Address = clubVM.Address
+
+                };
+
+                _clubRepository.Update(club);
+
+                return RedirectToAction("Index");
+
+            }else{
+                return View(clubVM);
+            }
         }
     }
 }
